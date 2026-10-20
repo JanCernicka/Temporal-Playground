@@ -1,6 +1,31 @@
 # Temporal-Playground
 Just for testing out Temporal to run some workflows.
 
+## Demo workflow (no API key needed)
+
+`demo/` holds a fake cooking workflow that only waits and returns strings, so you can watch Temporal in the Web UI without paying for anything. One run takes about 30 seconds:
+
+1. `chop_ingredients` activity (5 s)
+2. A 10 s durable timer
+3. `cook_dish` activity: fails on its first attempt on purpose, then succeeds on the retry
+4. `serve_dish` activity, which returns the final message
+
+Run it (with `temporal server start-dev` running and dependencies installed as below):
+
+```bash
+cd demo
+python worker.py                 # terminal 1
+python starter.py "pancakes"     # terminal 2
+```
+
+What to look at in the Web UI (http://localhost:8233):
+
+- **Event History:** activities scheduled and completed, the timer firing, and the workflow tasks in between.
+- **Pending Activities:** while `cook_dish` waits for its retry, you see the attempt number and the last failure.
+- **Queries:** run `get_status` while the workflow is running to see which step it is on.
+- **Workers:** the task queue `demo-task-queue` lists your worker as a poller.
+- **Start Workflow** button: start one from the UI with type `CookingWorkflow`, task queue `demo-task-queue` and input `"pancakes"` (a JSON string).
+
 ## Recipe workflow
 
 A Temporal workflow (Python SDK) that asks Claude for a cooking recipe.
